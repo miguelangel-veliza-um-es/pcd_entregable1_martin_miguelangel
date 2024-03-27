@@ -148,6 +148,7 @@ class Universidad(Ubicacion):
         self._estudiantes = set()
         self._asociados = set()
         self._titulares = set()
+        self._asignaturas = set()
     
     def listado_investigadores(self):
         print(f'Investigadores de {self.nombre}:\n')
@@ -176,9 +177,13 @@ class Universidad(Ubicacion):
     def añadir_investigador(self, nombre, dni, sexo, direccion, codpostal, departamento, area):
         nuevo_investigador = Investigador(nombre, dni, sexo, direccion, codpostal, departamento, area)
         for investigador in self._investigadores:
-            if investigador._eq(nuevo_investigador):
-                print(f"{nombre} ya existe como investigador.")
-                return 
+            if nuevo_investigador.nombre == investigador.nombre:
+                if investigador._eq(nuevo_investigador):
+                    print(f"{nombre} ya existe como investigador.")
+                    return
+                else:
+                    print(f"El nombre de este investigador ya está en uso, elija otro.")
+                    return 
         self._investigadores.add(nuevo_investigador)
         print(f'{nombre} añadid@ a Investigadores de {self.nombre} con éxito.')
         return 
@@ -186,9 +191,13 @@ class Universidad(Ubicacion):
     def añadir_estudiante(self, nombre, dni, sexo, direccion, codpostal, asignaturas):
         nuevo_estudiante = Estudiante(nombre, dni, sexo, direccion, codpostal, asignaturas)
         for estudiante in self._estudiantes:
-            if estudiante._eq(nuevo_estudiante):
-                print(f"{nombre} ya existe como estudiante.")
-                return
+            if nuevo_estudiante.nombre == estudiante.nombre :
+                if estudiante._eq(nuevo_estudiante):
+                    print(f"{nombre} ya existe como estudiante.")
+                    return
+                else:
+                    print(f"El nombre este estudiante ya está en uso, elija otro.")
+                    return 
         self._estudiantes.add(nuevo_estudiante)
         print(f'{nombre} añadid@ a Estudiantes de {self.nombre} con éxito.')
         return 
@@ -196,9 +205,13 @@ class Universidad(Ubicacion):
     def añadir_asociado(self, nombre, dni, sexo, direccion, codpostal, asignaturas, departamento):
         nuevo_asociado = Asociado(nombre, dni, sexo, direccion, codpostal, asignaturas, departamento)
         for asociado in self._asociados:
-            if asociado._eq(nuevo_asociado):
-                print(f"{nombre} ya existe como profesor asociado.")
-                return
+            if nuevo_asociado.nombre == asociado.nombre:
+                if asociado._eq(nuevo_asociado):
+                    print(f"{nombre} ya existe como profesor asociado.")
+                    return
+                else:
+                    print(f"El nombre este profesor asociado ya está en uso, elija otro.")
+                    return 
         self._asociados.add(nuevo_asociado)
         print(f'{nombre} añadid@ a Profesores Asociados de {self.nombre} con éxito.')
         return 
@@ -206,21 +219,194 @@ class Universidad(Ubicacion):
     def añadir_titular(self, nombre, dni, sexo, direccion, codpostal, departamento, asignaturas, area):
         nuevo_titular = Titular(nombre, dni, sexo, direccion, codpostal, departamento, asignaturas, area)
         for titular in self._titulares:
-            if titular._eq(nuevo_titular):
-                print(f"{nombre} ya existe como profesor titular.")
-                return 
+            if nuevo_titular.nombre == titular.nombre:
+                if titular._eq(nuevo_titular):
+                    print(f"{nombre} ya existe como profesor titular.")
+                    return 
+                else:
+                    print(f"El nombre este profesor titular ya está en uso, elija otro.")
+                    return 
         self._titulares.add(nuevo_titular)
         print(f'{nombre} añadid@ a Profesores Titulares de {self.nombre} con éxito.')
         return 
+    
+    def visualizar_persona(self, nombre, tipo_individuo):
+        if tipo_individuo in ("INVESTIGADOR", "Investigador","investigador"):
+            for investigador in self._investigadores:
+                if investigador.nombre == nombre:
+                    print(f"Investigador encontrad@: \n\t{investigador.mostrar_miembro()}")
+                    return 
+                print('Investigador no encontrado.')
+                return
+        elif tipo_individuo in ("ESTUDIANTE", "Estudiante", "estudiante"):
+            for estudiante in self._estudiantes:
+                if estudiante.nombre == nombre:
+                    print(f"Estudiante encontrad@: \n\t{estudiante.mostrar_estudiante()}")
+                    return 
+            print ('Estudiante no encontrado.')
+            return 
+        elif tipo_individuo in ("ASOCIADO", "Asociado", "asociado"):
+            for asociado in self._asociados:
+                if asociado.nombre == nombre:
+                    print(f"Profesor asociado encontrad@: \n\t{estudiante.mostrar_miembro()}")
+                    return
+            print('Profesor asociado no encontrado.')
+            return 
+        elif tipo_individuo in ("TITULAR", "Titular", "titular"):
+            for titular in self._titulares:
+                if titular.nombre == nombre:
+                    print(f"Profesor titular encontrad@: \n\t{estudiante.mostrar_miembro()}")
+                    return
+            print('Profesor titular no encontrado.')
+            return 
+        else:
+            print('El "Tipo de individuo" no es correcto.')
+            return
+    
+    def _buscar_persona(self, nombre, tipo_individuo):
+        if tipo_individuo in ("INVESTIGADOR", "Investigador","investigador"):
+            for investigador in self._investigadores:
+                if investigador.nombre == nombre:
+                    return investigador
+            return False
+        elif tipo_individuo in ("ESTUDIANTE", "Estudiante", "estudiante"):
+            for estudiante in self._estudiantes:
+                if estudiante.nombre == nombre:
+                    return estudiante
+            return False
+        elif tipo_individuo in ("ASOCIADO", "Asociado", "asociado"):
+            for asociado in self._asociados:
+                if asociado.nombre == nombre:
+                    return asociado
+            return False
+        elif tipo_individuo in ("TITULAR", "Titular", "titular"):
+            for titular in self._titulares:
+                if titular.nombre == nombre:
+                    return titular
+            return False
+        else:
+            return False
+    
+    def eliminar_investigador(self, nombre):
+        investigador = self._buscar_persona(nombre, "Investigador")
+        if not investigador:
+            print("EL investigador/a no existe.")
+            return 
+        self._investigadores.remove(investigador)
+        print(f"Investigador/a '{nombre}' eliminad@ con éxito.")
+        return
+    
+    def eliminar_estudiante(self, nombre):
+        estudiante = self._buscar_persona(nombre, "Estudiante")
+        if not estudiante:
+            print("EL estudiante no existe")
+            return 
+        self._estudiantes.remove(estudiante)
+        print(f"Estudiante '{nombre}' eliminad@ con éxito.")
+        return
+    
+    def eliminar_asociado(self, nombre):
+        asociado  = self._buscar_persona(nombre, "Asociado")
+        if not asociado:
+            print("EL profesor asociado no existe.")
+            return 
+        self._asociados.remove(asociado)
+        print(f"Profesor/a asociad@ '{nombre}' eliminad@ con éxito.")
+        return
+    
+    def eliminar_titular(self, nombre):
+        titular = self._buscar_persona(nombre, "Titular")
+        if not titular:
+            print("El profesor/a titular no existe.")
+            return 
+        self._titulares.remove(titular)
+        print(f"Profesor/a titular '{nombre}' eliminad@ con éxito.")
+        return
+    
+    def _modificar_investigador(self, nombre, cambios):
+        investigador = self._buscar_persona(nombre, "Investigador")
+        for key, value in cambios.items():
+            if key == "sexo":
+                value = "Hombre" if value == Sexo.V else "Mujer"
+            if key == "departamento":
+                value = "DIIC" if value == Departamento.DIIC else "DIS" if Departamento.DIS else "DITEC"
+            setattr(investigador, key, value) # así establecemos el nuevo valor al atributo del objeto
+        print("Cambios realizados con éxito.\n\t")
+        print (investigador.mostrar_miembro())
+        return
+    
+    def _modificar_estudiante(self, nombre, cambios):
+        estudiante = self._buscar_persona(nombre, "Estudiante")
+        for key, value in cambios.items():
+            if key == "sexo":
+                value = "Hombre" if value == Sexo.V else "Mujer"
+            setattr(estudiante, key, value)
+        print("Cambios realizados con éxito.\n\t")
+        print (estudiante.mostrar_estudiante())
+        return
+    
+    def _modificar_asociado(self, nombre, cambios):
+        asociado = self._buscar_persona(nombre, "Asociado")
+        for key, value in cambios.items():
+            if key == "sexo":
+                value = "Hombre" if value == Sexo.V else "Mujer"
+            if key == "departamento":
+                value = "DIIC" if value == Departamento.DIIC else "DIS" if Departamento.DIS else "DITEC"
+            setattr(asociado, key, value) 
+        print("Cambios realizados con éxito.\n\t")
+        print (asociado.mostrar_miembro())
+        return  
+    
+    def _modificar_titular(self, nombre, cambios):
+        titular = self._buscar_persona(nombre, "Titular")
+        for key, value in cambios.items():
+            if key == "sexo":
+                value = "Hombre" if value == Sexo.V else "Mujer"
+            if key == "departamento":
+                value = "DIIC" if value == Departamento.DIIC else "DIS" if Departamento.DIS else "DITEC"
+            setattr(titular, key, value) # así establecemos el nuevo valor al atributo del objeto
+        print("Cambios realizados con éxito.\n\t")
+        print (titular.mostrar_miembro())
+        return 
+    
+    def modificar_persona(self, nombre, tipo, cambios):
+        assert isinstance(cambios, dict), "EL formato de los cambios no es correcto. Deben seguir el siguiente formato:\n\t\t\t{'campo1': nuevo_valor1, 'campo2' : nuevo_valor2}"
+        if tipo in ("INVESTIGADOR", "Investigador","investigador"):
+            self._modificar_investigador(nombre, cambios)
+            return 
+        elif tipo in ("ESTUDIANTE", "Estudiante", "estudiante"):
+            self._modificar_estudiante(nombre, cambios)
+            return 
+        elif tipo in ("ASOCIADO", "Asociado", "asociado"):
+            self._modificar_asociado(nombre, cambios)
+            return 
+        elif tipo in ("TITULAR", "Titular", "titular"):
+            self._modificar_titular(nombre, cambios)
+            return 
+        else:
+            print('No se ha encontrado un individuo con esas características')
+            return 
+    #def añadir_asignatura(self, nombre, curso, creditos, codigo, carrera, profesor):
+    # Toda asignatura debe estar impartida por al menos una persona docente
+        
+    
             
 #######################  PRUEBAS ##############################
 
-u = Universidad("UMU", 62534769662, "umu@gmail.com", "C/Lepanto", 30600)
+##################### Creamos el objeto de la clase Universidad (u) #############################
+u = Universidad("Universidad de Murcia", 625145589, "umu@um.es", "C/Esmeralda Nº:24", 30600)
 
-lengua = Asignatura("Lengua",2,60, 302145,"CID")
-mates = Asignatura("mates", 5, 60, 12456, "CID")
+##################### Instanciamos objetos de la clase Asignatura #############################
+pcd = Asignatura("Programación Ciencia de Datos", "2º", 6, 30145, "Ciencia e Ingeniería de Datos")
+bases_datos = Asignatura("Bases de Datos", "2º", 6, 12456, "Ciencia e Ingeniería de Datos")
+geometria = Asignatura("Geometría", "1º", 6, 24568, "Matemáticas")
+algebra = Asignatura("Álgebra", "2º", 6, 78963, "Matemáticas")
+bioinformatica = Asignatura("Bioinformática", "3º", 4, 45214, "Biotecnología")
+plantas = Asignatura("Plantas", "2º", 6, 12589, "Biotecnología")
+microbiología = Asignatura("Microbiología","4º", 6, 14569, "Medicina")
+neurología = Asignatura("Neurología", "5º", 6, 45213, "Medicina")
 
-# Creación de tres instancias adicionales de Asociado
+############################# Añadimos individuos de todos los tipos #########################
 u.añadir_asociado('Ana', "12345678A", Sexo.M, "C/Calle", 12345, [lengua, mates], Departamento.DIIC)
 u.añadir_asociado('Carlos', "87654321B", Sexo.V, "C/Plaza", 54321, [lengua, mates], Departamento.DIS)
 u.añadir_asociado('Elena', "11111111C", Sexo.M, "C/Avenida", 67890, [lengua, mates], Departamento.DITEC)
@@ -230,7 +416,7 @@ u.añadir_asociado('Elena', "11111111C", Sexo.M, "C/Avenida", 67890, [lengua, ma
 u.añadir_investigador('Ana', "12345678A", Sexo.M, "C/Calle", 12345, Departamento.DIIC, "Física")
 u.añadir_investigador('Carlos', "87654321B", Sexo.V, "C/Plaza", 54321, Departamento.DIS, "Química")
 u.añadir_investigador('Elena', "11111111C", Sexo.M, "C/Avenida", 67890, Departamento.DITEC, "Biología")
-u.añadir_investigador('Elena', "11111111C", Sexo.M, "C/Avenida", 67890, Departamento.DITEC, "Biología")
+u.añadir_investigador('Elena', "114556622C", Sexo.M, "C/Avenida", 67890, Departamento.DITEC, "Biología")
 
 # Crear instancias adicionales de Estudiante
 u.añadir_estudiante('Ana', "12345678A", Sexo.M, "C/Calle", 12345, [lengua, mates])
@@ -248,3 +434,13 @@ u.listado_asociados()
 u.listado_estudiantes()
 u.listado_investigadores()
 u.listado_titulares()
+
+u.visualizar_persona('Elena', 'estudiante')
+u.eliminar_estudiante('Carlos')
+u.eliminar_investigador('Ana')
+u.eliminar_asociado('Miguel')
+u.eliminar_titular('Elena')
+u.listado_estudiantes()
+u.listado_investigadores()
+u.listado_titulares()
+u.modificar_persona('Elena', 'Investigador', {"sexo": Sexo.V, "area": "Geología"})
