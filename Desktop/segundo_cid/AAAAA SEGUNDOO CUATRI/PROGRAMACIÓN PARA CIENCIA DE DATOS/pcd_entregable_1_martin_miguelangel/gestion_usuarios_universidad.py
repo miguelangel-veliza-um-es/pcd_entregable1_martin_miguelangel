@@ -24,26 +24,41 @@ class NoExiste(Exception):
     pass
 
 
+class CampoNoExistente(Exception):
+    pass
+
+
 class Ubicacion:
     def __init__(self, direccion, codpostal):
 
+        if not isinstance(direccion, str):
+            raise TypeError("La variable 'direccion' debe ser de tipo 'str'")
         self.direccion = direccion
-        if not isinstance(codpostal, int):
-            raise TypeError("La variable 'codpostal' debe ser de tipo 'int'")
+        if not isinstance(codpostal, int) or len(str(codpostal)) != 5:
+            raise TypeError(
+                "La variable 'codpostal' debe ser de tipo 'int' y debe tener 5 dígitos"
+            )
         self.codpostal = codpostal
 
     def mostrar_ubicacion(self):
         return "Dirección: " + self.direccion + " Codigo Postal: " + str(self.codpostal)
 
 
+import re
+
+
 class Persona(Ubicacion):
     def __init__(self, nombre, dni, sexo, direccion, codpostal):
-        if sexo not in (Sexo.V, Sexo.M):
-            raise TypeError("El sexo debe ser Sexo.V (Varón) o Sexo.M (Mujer)")
         super().__init__(direccion, codpostal)
+        if not isinstance(nombre, str):
+            raise TypeError("La variable 'nombre' debe ser de tipo 'str'")
         self.nombre = nombre
+        if not re.match(r"^\d{8}[A-Z]$", dni):
+            raise TypeError("La variable 'dni' debe tener 8 dígitos y una letra")
         self.dni = dni
-        self.sexo = "Hombre" if sexo == Sexo.V else "Mujer"
+        if sexo.lower() not in ("varón", "mujer"):
+            raise TypeError("El sexo debe ser 'Varón' o ''Mujer)")
+        self.sexo = Sexo.V if sexo.lower == "varón" else Sexo.M
 
     def mostrar_datos(self):
         return (
@@ -52,7 +67,7 @@ class Persona(Ubicacion):
             + " DNI: "
             + self.dni
             + " Sexo: "
-            + self.sexo
+            + str(self.sexo)
             + " "
             + self.mostrar_ubicacion()
         )
@@ -61,27 +76,41 @@ class Persona(Ubicacion):
 class MiembroDepartamento(Persona):
     def __init__(self, nombre, dni, sexo, direccion, codpostal, departamento):
         super().__init__(nombre, dni, sexo, direccion, codpostal)
-        if departamento not in (
-            Departamento.DIIC,
-            Departamento.DIS,
-            Departamento.DITEC,
+        if departamento.lower() not in (
+            "diic",
+            "dis",
+            "ditec",
         ):
             raise TypeError(
-                " El departamento debe tener uno de estos valores: [Departamento.DIIC o Departamento.DIS o Departamento.DITEC]"
+                " El departamento debe tener uno de estos valores: [DIIC o DIS o DITEC]"
             )
         self.departamento = (
-            "DIIC"
-            if departamento == Departamento.DIIC
-            else "DIS" if Departamento.DIS else "DITEC"
+            Departamento.DIIC
+            if departamento.lower() == "diic"
+            else (
+                Departamento.DIS
+                if departamento.lower() == "dis"
+                else Departamento.DITEC
+            )
         )
 
 
 class Asignatura:
     def __init__(self, nombre, curso, creditos, codigo, carrera):
+        if not isinstance(nombre, str):
+            raise TypeError("La variable 'nombre' debe ser de tipo 'str'")
         self.nombre = nombre
+        if not isinstance(curso, str):
+            raise TypeError("La variable 'curso' debe ser de tipo 'str'")
         self.curso = curso
+        if not isinstance(creditos, int):
+            raise TypeError("La variable 'creditos' debe ser de tipo 'int'")
         self.creditos = creditos
+        if not isinstance(codigo, int):
+            raise TypeError("La variable 'codigo' debe ser de tipo 'int'")
         self.codigo = codigo
+        if not isinstance(carrera, str):
+            raise TypeError("La variable 'carrera' debe ser de tipo 'str'")
         self.carrera = carrera
 
     def mostrar_asignatura(self):
@@ -89,13 +118,13 @@ class Asignatura:
             "Nombre: "
             + self.nombre
             + " Curso: "
-            + str(self.curso)
+            + self.curso
             + " Creditos: "
             + str(self.creditos)
             + " Código: "
             + str(self.codigo)
             + " Carrera: "
-            + str(self.carrera)
+            + self.carrera
         )
 
 
@@ -134,13 +163,15 @@ class Investigador(MiembroDepartamento):
         MiembroDepartamento.__init__(
             self, nombre, dni, sexo, direccion, codpostal, departamento
         )
+        if not isinstance(area, str):
+            raise TypeError("La variable 'area' debe ser de tipo 'str'")
         self.area = area
 
     def mostrar_miembro(self):
         return (
             self.mostrar_datos()
             + " Departamento: "
-            + self.departamento
+            + str(self.departamento)
             + " Area: "
             + self.area
         )
@@ -251,15 +282,24 @@ class Universidad(Ubicacion):
 
     def __init__(self, nombre, telefono, correo, direccion, codpostal):
         super().__init__(direccion, codpostal)
+        if not isinstance(nombre, str):
+            raise TypeError("La variable 'nombre' debe ser de tipo 'str'")
         self.nombre = nombre
+        if not isinstance(telefono, int) or len(str(telefono)) != 9:
+            raise TypeError(
+                "La variable 'telefono' debe ser de tipo 'int' y debe de tener 10 dígitos"
+            )
         self.telefono = telefono
+        if not re.match(r"^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$", correo):
+            raise TypeError(
+                "La variable 'correo' debe de tener el formato 'nombre@dominio.extension'"
+            )
         self.correo = correo
 
         self._investigadores = set()
         self._estudiantes = set()
         self._asociados = set()
         self._titulares = set()
-        self._asignaturas = set()
 
     def listado_investigadores(self):
         print(f"Investigadores de {self.nombre}:\n")
@@ -344,22 +384,22 @@ class Universidad(Ubicacion):
         return
 
     def _buscar_persona(self, dni, tipo_individuo):
-        if tipo_individuo in ("INVESTIGADOR", "Investigador", "investigador"):
+        if tipo_individuo.lower() == "investigador":
             for investigador in self._investigadores:
                 if investigador.dni == dni:
                     return investigador
             return False
-        elif tipo_individuo in ("ESTUDIANTE", "Estudiante", "estudiante"):
+        elif tipo_individuo.lower() == "estudiante":
             for estudiante in self._estudiantes:
                 if estudiante.dni == dni:
                     return estudiante
             return False
-        elif tipo_individuo in ("ASOCIADO", "Asociado", "asociado"):
+        elif tipo_individuo.lower == "asociado":
             for asociado in self._asociados:
                 if asociado.dni == dni:
                     return asociado
             return False
-        elif tipo_individuo in ("TITULAR", "Titular", "titular"):
+        elif tipo_individuo.lower() == "titular":
             for titular in self._titulares:
                 if titular.dni == dni:
                     return titular
@@ -371,21 +411,11 @@ class Universidad(Ubicacion):
         persona = self._buscar_persona(dni, tipo_individuo)
 
         if (
-            tipo_individuo
-            in (
-                "INVESTIGADOR",
-                "Investigador",
-                "investigador, ASOCIADO",
-                "Asociado",
-                "asociado",
-                "TITULAR",
-                "Titular",
-                "titular",
-            )
+            tipo_individuo.lower() in ("investigador", "asociado", "titular")
             and persona
         ):
             print(f"{tipo_individuo} encontrad@: \n\t{persona.mostrar_miembro()}")
-        elif tipo_individuo in ("ESTUDIANTE", "Estudiante", "estudiante") and persona:
+        elif tipo_individuo.lower() == "estudiante" and persona:
             print(f"Estudiante encontrad@: \n\t{persona.mostrar_estudiante()}")
         else:
             print("No encontrado")
@@ -422,74 +452,79 @@ class Universidad(Ubicacion):
         print(f"Profesor/a titular '{dni}' eliminad@ con éxito.")
         return
 
-    def _modificar_investigador(self, dni, cambios):
-        investigador = self._buscar_persona(dni, "Investigador")
-        if not investigador:
-            raise NoExiste(f"El investigador/a con dni {dni} no existe.")
+    def _modificar_persona(self, dni, cambios):
+        roles = ["Investigador", "Estudiante", "Asociado", "Titular"]
+        i = -1
+        persona = False
+        while i < len(roles) and not persona:
+            i += 1
+            persona = self._buscar_persona(dni, roles[i])
+        if not persona:
+            raise NoExiste(f"La persona con dni {dni} no existe.")
         for key, value in cambios.items():
+            if key == "nombre":
+                if not isinstance(value, str):
+                    raise TypeError("La variable 'nombre' debe ser de tipo 'str'")
+            if key == "dni":
+                if not re.match(r"^\d{8}[A-Z]$", value):
+                    raise TypeError(
+                        "La variable 'dni' debe tener 8 dígitos y una letra"
+                    )
             if key == "sexo":
-                value = "Hombre" if value == Sexo.V else "Mujer"
+                if value.lower() not in ("varón", "mujer"):
+                    raise TypeError("El sexo debe ser 'Varón' o ''Mujer)")
+                value = Sexo.V if value.lower() == "varón" else Sexo.M
+
             if key == "departamento":
+                if value.lower() not in (
+                    "diic",
+                    "dis",
+                    "ditec",
+                ):
+                    raise TypeError(
+                        "El departamento debe tener uno de estos valores: [DIIC o DIS o DITEC]"
+                    )
                 value = (
-                    "DIIC"
-                    if value == Departamento.DIIC
-                    else "DIS" if Departamento.DIS else "DITEC"
+                    Departamento.DIIC
+                    if value.lower() == "diic"
+                    else (
+                        Departamento.DIS
+                        if value.lower() == "dis"
+                        else Departamento.DITEC
+                    )
                 )
+            if key == "direccion":
+                if not isinstance(value, str):
+                    raise TypeError("La variable 'direccion' debe ser de tipo 'str'")
+
+            if key == "codpostal" and (
+                not isinstance(value, int) or len(str(value)) != 5
+            ):
+                raise TypeError(
+                    "La variable 'codpostal' debe ser de tipo 'int' y debe tener 5 dígitos"
+                )
+
+            if key == "asignaturas" and not isinstance(value, list):
+                raise TypeError("'asignaturas' debe ser una lista")
+
+            if key == "asignaturas" and not (
+                all(isinstance(asig, Asignatura) for asig in value)
+            ):
+                raise TypeError(
+                    "No todas las 'asignaturas' pertenecen a la clase Asignaturas"
+                )
+            if key == "area":
+                if not isinstance(value, str):
+                    raise TypeError("La variable 'area' debe ser de tipo 'str'")
+
             setattr(
-                investigador, key, value
+                persona, key, value
             )  # así establecemos el nuevo valor al atributo del objeto
         print("Cambios realizados con éxito.\n\t")
-        print(investigador.mostrar_miembro())
-        return
-
-    def _modificar_estudiante(self, dni, cambios):
-        estudiante = self._buscar_persona(dni, "Estudiante")
-        if not estudiante:
-            raise NoExiste(f"El estudiante con dni {dni} no existe.")
-        for key, value in cambios.items():
-            if key == "sexo":
-                value = "Hombre" if value == Sexo.V else "Mujer"
-            setattr(estudiante, key, value)
-        print("Cambios realizados con éxito.\n\t")
-        print(estudiante.mostrar_estudiante())
-        return
-
-    def _modificar_asociado(self, dni, cambios):
-        asociado = self._buscar_persona(dni, "Asociado")
-        if not asociado:
-            raise NoExiste(f"El profesor/a asociado/a con dni {dni} no existe.")
-        for key, value in cambios.items():
-            if key == "sexo":
-                value = "Hombre" if value == Sexo.V else "Mujer"
-            if key == "departamento":
-                value = (
-                    "DIIC"
-                    if value == Departamento.DIIC
-                    else "DIS" if Departamento.DIS else "DITEC"
-                )
-            setattr(asociado, key, value)
-        print("Cambios realizados con éxito.\n\t")
-        print(asociado.mostrar_miembro())
-        return
-
-    def _modificar_titular(self, dni, cambios):
-        titular = self._buscar_persona(dni, "Titular")
-        if not titular:
-            raise NoExiste(f"El profesor/a titular con dni {dni} no existe.")
-        for key, value in cambios.items():
-            if key == "sexo":
-                value = "Hombre" if value == Sexo.V else "Mujer"
-            if key == "departamento":
-                value = (
-                    "DIIC"
-                    if value == Departamento.DIIC
-                    else "DIS" if Departamento.DIS else "DITEC"
-                )
-            setattr(
-                titular, key, value
-            )  # así establecemos el nuevo valor al atributo del objeto
-        print("Cambios realizados con éxito.\n\t")
-        print(titular.mostrar_miembro())
+        if roles[i] != "Estudiante":
+            print(persona.mostrar_miembro())
+        else:
+            print(persona.mostrar_estudiante())
         return
 
     def modificar_persona(self, dni, tipo, cambios):
@@ -497,161 +532,251 @@ class Universidad(Ubicacion):
             raise TypeError(
                 f"El formato de los cambios no es correcto. Deben seguir el siguiente formato:\n\t\t\t{'campo1': nuevo_valor1, 'campo2' : nuevo_valor2}"
             )
-        if tipo in ("INVESTIGADOR", "Investigador", "investigador"):
-            self._modificar_investigador(dni, cambios)
-            return
-        elif tipo in ("ESTUDIANTE", "Estudiante", "estudiante"):
-            self._modificar_estudiante(dni, cambios)
-            return
-        elif tipo in ("ASOCIADO", "Asociado", "asociado"):
-            self._modificar_asociado(dni, cambios)
-            return
-        elif tipo in ("TITULAR", "Titular", "titular"):
-            self._modificar_titular(dni, cambios)
-            return
-        else:
-            print("No se ha encontrado un individuo con esas características")
-            return
+        if not (tipo.lower() in ("investigador", "estudiante", "asociado", "titular")):
+            raise TypeError(
+                "El tipo debe de estar en ['investigador', 'estudiante', 'asociado', 'titular']"
+            )
 
-    # def añadir_asignatura(self, nombre, curso, creditos, codigo, carrera, profesor):
-    # Toda asignatura debe estar impartida por al menos una persona docente
+        if (
+            tipo.lower() == "estudiante"
+            and len(
+                list(
+                    filter(
+                        lambda key: key
+                        not in [
+                            "nombre",
+                            "dni",
+                            "sexo",
+                            "direccion",
+                            "codpostal",
+                            "asignaturas",
+                        ],
+                        list(cambios.keys()),
+                    )
+                )
+            )
+            != 0
+        ):
+            raise CampoNoExistente("Campo Inválido")
+
+        if (
+            tipo.lower() == "investigador"
+            and len(
+                list(
+                    filter(
+                        lambda key: key
+                        not in [
+                            "nombre",
+                            "dni",
+                            "sexo",
+                            "direccion",
+                            "codpostal",
+                            "departamento",
+                            "area",
+                        ],
+                        list(cambios.keys()),
+                    )
+                )
+            )
+            != 0
+        ):
+            raise CampoNoExistente("Campo Inválido")
+
+        if (
+            tipo.lower() == "asociado"
+            and len(
+                list(
+                    filter(
+                        lambda key: key
+                        not in [
+                            "nombre",
+                            "dni",
+                            "sexo",
+                            "direccion",
+                            "codpostal",
+                            "departamento",
+                            "asignaturas",
+                        ],
+                        list(cambios.keys()),
+                    )
+                )
+            )
+            != 0
+        ):
+            raise CampoNoExistente("Campo Inválido")
+
+        if (
+            tipo.lower() == "titular"
+            and len(
+                list(
+                    filter(
+                        lambda key: key
+                        not in [
+                            "nombre",
+                            "dni",
+                            "sexo",
+                            "direccion",
+                            "codpostal",
+                            "departamento",
+                            "asignaturas",
+                            "area",
+                        ],
+                        list(cambios.keys()),
+                    )
+                )
+            )
+            != 0
+        ):
+            raise CampoNoExistente("Campo Inválido")
+
+        self._modificar_persona(dni, cambios)
+        return
 
 
 #######################  PRUEBAS ##############################
 
 ##################### Creamos el objeto de la clase Universidad (u) #############################
-u = Universidad(
-    "Universidad de Murcia", 625145589, "umu@um.es", "C/Esmeralda Nº:24", 30455
-)
+try:
+    u = Universidad(
+        "Universidad de Murcia", 758965478, "umu@um.es", "C/Esmeralda Nº:24", 30455
+    )
 
-##################### Instanciamos objetos de la clase Asignatura #############################
-pcd = Asignatura(
-    "Programación Ciencia de Datos", "2º", 6, 30145, "Ciencia e Ingeniería de Datos"
-)
-bases_datos = Asignatura(
-    "Bases de Datos", "2º", 6, 12456, "Ciencia e Ingeniería de Datos"
-)
-geometria = Asignatura("Geometría", "1º", 6, 24568, "Matemáticas")
-algebra = Asignatura("Álgebra", "2º", 6, 78963, "Matemáticas")
-bioinformatica = Asignatura("Bioinformática", "3º", 4, 45214, "Biotecnología")
-plantas = Asignatura("Plantas", "2º", 6, 12589, "Biotecnología")
-microbiología = Asignatura("Microbiología", "4º", 6, 14569, "Medicina")
-neurología = Asignatura("Neurología", "5º", 6, 45213, "Medicina")
+    ##################### Instanciamos objetos de la clase Asignatura #############################
+    pcd = Asignatura(
+        "Programación Ciencia de Datos", "2º", 6, 30145, "Ciencia e Ingeniería de Datos"
+    )
+    bases_datos = Asignatura(
+        "Bases de Datos", "2º", 6, 12456, "Ciencia e Ingeniería de Datos"
+    )
+    geometria = Asignatura("Geometría", "1º", 6, 24568, "Matemáticas")
+    algebra = Asignatura("Álgebra", "2º", 6, 78963, "Matemáticas")
+    bioinformatica = Asignatura("Bioinformática", "3º", 4, 45214, "Biotecnología")
+    plantas = Asignatura("Plantas", "2º", 6, 12589, "Biotecnología")
+    microbiología = Asignatura("Microbiología", "4º", 6, 14569, "Medicina")
+    neurología = Asignatura("Neurología", "5º", 6, 45213, "Medicina")
 
-############################# Añadimos individuos de todos los tipos #########################
-u.añadir_asociado(
-    "Ana", "12345678A", Sexo.M, "C/Calle", 12345, [pcd, bases_datos], Departamento.DIIC
-)
-u.añadir_asociado(
-    "Carlos",
-    "87654321B",
-    Sexo.V,
-    "C/Plaza",
-    54321,
-    [geometria, algebra],
-    Departamento.DIS,
-)
-u.añadir_asociado(
-    "Elena",
-    "11111111C",
-    Sexo.M,
-    "C/Avenida",
-    67890,
-    [plantas, microbiología],
-    Departamento.DITEC,
-)
-u.añadir_asociado(
-    "Elena",
-    "11111111C",
-    Sexo.M,
-    "C/Avenida",
-    67890,
-    [geometria, neurología],
-    Departamento.DITEC,
-)
+    ############################# Añadimos individuos de todos los tipos #########################
+    u.añadir_asociado(
+        "Ana", "12345678A", "Mujer", "C/Calle", 12345, [pcd, bases_datos], "DIIC"
+    )
+    u.añadir_asociado(
+        "Carlos",
+        "87654321B",
+        "Varón",
+        "C/Plaza",
+        54321,
+        [geometria, algebra],
+        "DIS",
+    )
+    u.añadir_asociado(
+        "Elena",
+        "11111111C",
+        "Mujer",
+        "C/Avenida",
+        67890,
+        [plantas, microbiología],
+        "DITEC",
+    )
+    u.añadir_asociado(
+        "Elena",
+        "11111111C",
+        "Mujer",
+        "C/Avenida",
+        67890,
+        [geometria, neurología],
+        "DITEC",
+    )
 
-# Crear instancias adicionales de Investigador
-u.añadir_investigador(
-    "Ana", "12345678A", Sexo.M, "C/Calle", 12345, Departamento.DIIC, "Física"
-)
-u.añadir_investigador(
-    "Carlos", "87654321B", Sexo.V, "C/Plaza", 54321, Departamento.DIS, "Química"
-)
-u.añadir_investigador(
-    "Elena", "11111111C", Sexo.M, "C/Avenida", 67890, Departamento.DITEC, "Biología"
-)
-u.añadir_investigador(
-    "Elena", "114556622C", Sexo.M, "C/Avenida", 67890, Departamento.DITEC, "Biología"
-)
-"""u.añadir_investigador(
-    "Elena", "114556622C", Sexo.M, "C/Avenida", 67890, Departamento.DITEC, "Biología"
-)"""
+    # Crear instancias adicionales de Investigador
+    u.añadir_investigador(
+        "Ana", "12345678A", "Mujer", "C/Calle", 12345, "DIIC", "Física"
+    )
+    u.añadir_investigador(
+        "Carlos", "87654321B", "Varón", "C/Plaza", 54321, "DIS", "Química"
+    )
+    u.añadir_investigador(
+        "Elena", "11111111C", "Mujer", "C/Avenida", 67890, "DITEC", "Biología"
+    )
+    u.añadir_investigador(
+        "Elena", "11556622C", "Mujer", "C/Avenida", 67890, "DITEC", "Biología"
+    )
+    """u.añadir_investigador(
+        "Elena", "11556622C", "Mujer", "C/Avenida", 67890, "DITEC", "Biología"
+    )"""
 
-# Crear instancias adicionales de Estudiante
-u.añadir_estudiante("Ana", "12345678A", Sexo.M, "C/Calle", 12345, [pcd, bases_datos])
-u.añadir_estudiante(
-    "Carlos", "87654321B", Sexo.V, "C/Plaza", 54321, [geometria, algebra]
-)
-u.añadir_estudiante(
-    "Elena", "11111111C", Sexo.M, "C/Avenida", 67890, [plantas, microbiología]
-)
-"""u.añadir_estudiante(
-    "Elena", "11111111C", Sexo.M, "C/Avenida", 67890, [plantas, microbiología]
-)"""
+    # Crear instancias adicionales de Estudiante
+    u.añadir_estudiante(
+        "Ana", "12345678A", "Mujer", "C/Calle", 12345, [pcd, bases_datos]
+    )
+    u.añadir_estudiante(
+        "Carlos", "87654321B", "Varón", "C/Plaza", 54321, [geometria, algebra]
+    )
+    u.añadir_estudiante(
+        "Elena", "11111111C", "Mujer", "C/Avenida", 67890, [plantas, microbiología]
+    )
+    """u.añadir_estudiante(
+        "Elena", "11111111C", "Mujer", "C/Avenida", 67890, [plantas, microbiología]
+    )"""
 
-# Crear instancias adicionales de Titular
-u.añadir_titular(
-    "Ana",
-    "12345678A",
-    Sexo.M,
-    "C/Calle",
-    12345,
-    Departamento.DIIC,
-    [geometria, neurología],
-    "Matemáticas",
-)
-u.añadir_titular(
-    "Carlos",
-    "87654321B",
-    Sexo.V,
-    "C/Plaza",
-    54321,
-    Departamento.DIS,
-    [bioinformatica, pcd],
-    "Física",
-)
-u.añadir_titular(
-    "Elena",
-    "11111111C",
-    Sexo.M,
-    "C/Avenida",
-    67890,
-    Departamento.DITEC,
-    [geometria, algebra],
-    "Química",
-)
-"""u.añadir_titular(
-    "Elena",
-    "11111111C",
-    Sexo.M,
-    "C/Avenida",
-    67890,
-    Departamento.DITEC,
-    [pcd, plantas],
-    "Química",
-)"""
+    # Crear instancias adicionales de Titular
+    u.añadir_titular(
+        "Ana",
+        "12345678A",
+        "Mujer",
+        "C/Calle",
+        12345,
+        "DIIC",
+        [geometria, neurología],
+        "Matemáticas",
+    )
+    u.añadir_titular(
+        "Carlos",
+        "87654321B",
+        "Varón",
+        "C/Plaza",
+        54321,
+        "DIS",
+        [bioinformatica, pcd],
+        "Física",
+    )
+    u.añadir_titular(
+        "Elena",
+        "11111111C",
+        "Mujer",
+        "C/Avenida",
+        67890,
+        "DITEC",
+        [geometria, algebra],
+        "Química",
+    )
+    """u.añadir_titular(
+        "Elena",
+        "11111111C",
+        "Mujer",
+        "C/Avenida",
+        67890,
+        "DITEC",
+        [pcd, plantas],
+        "Química",
+    )"""
 
-u.listado_asociados()
-u.listado_estudiantes()
-u.listado_investigadores()
-u.listado_titulares()
+    u.listado_asociados()
+    u.listado_estudiantes()
+    u.listado_investigadores()
+    u.listado_titulares()
 
-u.visualizar_persona("Elena", "estudiante")
-u.eliminar_estudiante("87654321B")
-u.eliminar_investigador("12345678A")
-# u.eliminar_asociado("000000000J")
-u.eliminar_titular("11111111C")
-u.listado_estudiantes()
-u.listado_investigadores()
-u.listado_titulares()
-u.modificar_persona("87654321B", "Investigador", {"sexo": Sexo.V, "area": "Geología"})
+    u.visualizar_persona("Elena", "estudiante")
+    u.eliminar_estudiante("87654321B")
+    u.eliminar_investigador("12345678A")
+    # u.eliminar_asociado("000000000J")
+    u.eliminar_titular("11111111C")
+    u.listado_estudiantes()
+    u.listado_investigadores()
+    u.listado_titulares()
+    u.modificar_persona("87654321B", "Estudiante", {"codpostal": 12455})
+except (TypeError, Existe, TipoNoCorrecto, NoExiste, CampoNoExistente) as e:
+    import sys
+
+    exc_type, exc_obj, exc_tb = sys.exc_info()
+    line_number = exc_tb.tb_lineno
+    print(f"Error en la línea {line_number}: {e}")
