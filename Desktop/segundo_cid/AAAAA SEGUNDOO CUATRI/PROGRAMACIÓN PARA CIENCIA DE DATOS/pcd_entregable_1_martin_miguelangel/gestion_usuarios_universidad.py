@@ -524,7 +524,6 @@ class Universidad(Ubicacion):
         
         self._modificar_persona(dni, cambios)
         return
-      
 
 
 #######################  PRUEBAS ##############################
@@ -655,7 +654,8 @@ try:
     u.listado_investigadores()
     u.listado_titulares()
 
-    u.visualizar_persona("Elena", "estudiante")
+    # Vamos a visualizar a "Elena", por lo que le pasamos su DNI
+    u.visualizar_persona("11111111C", "estudiante")
     u.eliminar_estudiante("87654321B")
     u.eliminar_investigador("12345678A")
     # u.eliminar_asociado("000000000J")
@@ -669,5 +669,3 @@ except (TypeError, Existe, TipoNoCorrecto, NoExiste, CampoNoExistente) as e:
     exc_type, exc_obj, exc_tb = sys.exc_info()
     line_number = exc_tb.tb_lineno
     print(f"Error en la línea {line_number}: {e}")
-    
-    
